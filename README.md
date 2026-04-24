@@ -1,16 +1,30 @@
-# app_bottom_bar
+# Todo App
 
-A new Flutter project.
+A simple and efficient Todo application built with Flutter for managing daily tasks with authentication and cloud storage.
 
-## Getting Started
+## Features
+- User authentication using Firebase Auth  
+- Create, update, complete, and delete tasks  
+- Task categorization (completed / incomplete)  
+- Real-time data storage using Cloud Firestore  
+- Clean and user-friendly UI  
 
-This project is a starting point for a Flutter application.
+## Tech Stack
+- Flutter  
+- Firebase Auth  
+- Cloud Firestore  
+- Riverpod (State Management)  
 
-A few resources to get you started if this is your first Flutter project:
+## Screens
+- Create Task  
+- Incomplete Tasks  
+- Completed Tasks  
+- Logout  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Highlights
+- Real-time task updates using Firestore  
+- Secure authentication system  
+- Clean architecture with Riverpod state management  
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Status
+Completed
