@@ -1,10 +1,10 @@
 import 'package:app_bottom_bar/firebase_options.dart';
+import 'package:app_bottom_bar/src/routing/state_app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:app_bottom_bar/routing/app_router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +16,8 @@ void main() async {
   runApp(ProviderScope(child: const MyApp()));
 }
 
+final refProvider = Provider<Ref>((ref) => ref);
+
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -23,20 +25,22 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      routerConfig: ref.watch(appRouterProvider),
-      title: 'Todo App',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.green),
-        appBarTheme: AppBarTheme().copyWith(
-          backgroundColor: Colors.green,
-          centerTitle: true,
-        ),
-        bottomNavigationBarTheme: BottomNavigationBarThemeData().copyWith(
-          backgroundColor: Colors.green,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.black,
-        ),
-      ),
+      routerConfig: StateAppRouter.router(),
+
+      // ref.watch(appRouterProvider),
+      // title: 'Todo App',
+      // theme: ThemeData(
+      //   colorScheme: .fromSeed(seedColor: Colors.green),
+      //   appBarTheme: AppBarTheme().copyWith(
+      //     backgroundColor: Colors.green,
+      //     centerTitle: true,
+      //   ),
+      //   bottomNavigationBarTheme: BottomNavigationBarThemeData().copyWith(
+      //     backgroundColor: Colors.green,
+      //     selectedItemColor: Colors.white,
+      //     unselectedItemColor: Colors.black,
+      //   ),
+      // ),
     );
   }
 }
