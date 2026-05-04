@@ -1,22 +1,24 @@
 import 'dart:developer';
 
-import 'package:app_bottom_bar/annotation_way_of_project/features/task_management/presentation/screens/main_screen.dart';
+import 'package:app_bottom_bar/src/providers/task_provider/add_task_provider.dart';
+import 'package:app_bottom_bar/src/routing/state_route_name.dart';
+import 'package:app_bottom_bar/src/states/tasks_state/add_task_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app_bottom_bar/annotation_way_of_project/common_widget/asyn_value_ui.dart';
-import 'package:app_bottom_bar/annotation_way_of_project/features/authentication/data/firebase_auth_repository/auth_repository.dart';
-import 'package:app_bottom_bar/annotation_way_of_project/features/authentication/presentation/widgets/title_task_section/title_task_section.dart';
-import 'package:app_bottom_bar/annotation_way_of_project/features/task_management/domain/task_model/task_model.dart';
-import 'package:app_bottom_bar/annotation_way_of_project/features/task_management/presentation/firestore_controller/firestore_controller.dart';
+import 'package:go_router/go_router.dart';
 
-class AddTaskScreen extends ConsumerStatefulWidget {
-  const AddTaskScreen({super.key});
+import '../../../annotation_way_of_project/features/authentication/presentation/widgets/title_task_section/title_task_section.dart';
+import '../../../annotation_way_of_project/features/task_management/domain/task_model/task_model.dart';
+
+class AddTask extends ConsumerStatefulWidget {
+  const AddTask({super.key});
 
   @override
-  ConsumerState<AddTaskScreen> createState() => _State();
+  ConsumerState<AddTask> createState() => _State();
 }
 
-class _State extends ConsumerState<AddTaskScreen> {
+class _State extends ConsumerState<AddTask> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   final List<String> _priorities = ['Low', 'Medium', 'High'];
@@ -24,13 +26,34 @@ class _State extends ConsumerState<AddTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userId = ref.watch(authStateChangesProvider).value;
-    final state = ref.watch(firestoreControllerProvider);
-    ref.listen(firestoreControllerProvider, (_, state) {
-      state.showAlertDialogOnError(context);
+    final state = ref.watch(addTaskProvider);
+    ref.listen(addTaskProvider, (prev, next) {
+      if (next is AddTaskError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else if (next is AddTaskSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.successMessage),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.pushReplacement(StateRouteNames.homeScreen);
+      } else {
+        null;
+      }
+      // state.showAlertDialogOnError(context);
     });
     return Scaffold(
-      appBar: AppBar(title: Text('Add Task')),
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        title: Text('Add Task'), actions: [IconButton(onPressed: (){
+        
+      }, icon: Icon(Icons.logout_outlined, color: Colors.white,))],),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -48,7 +71,7 @@ class _State extends ConsumerState<AddTaskScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Priority',
+                  'Priority',      
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(width: 7),
@@ -101,6 +124,7 @@ class _State extends ConsumerState<AddTaskScreen> {
             SizedBox(height: 25),
             ElevatedButton(
               onPressed: () async {
+                final userId = FirebaseAuth.instance.currentUser!.uid;
                 final title = titleController.text;
                 final description = descriptionController.text;
                 final date = DateTime.now();
@@ -110,18 +134,18 @@ class _State extends ConsumerState<AddTaskScreen> {
                   description: description,
                   date: date.toString(),
                   priority: priority,
-                  id: userId!.uid,
+                  id: userId,
                 );
                 log('userId: $userId');
                 log('myTask: $myTask');
                 // state.isLoading?null:
                 await ref
-                    .read(firestoreControllerProvider.notifier)
-                    .addTask(task: myTask, userId: userId.uid);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => MainScreen()),
-                );
+                    .read(addTaskProvider.notifier)
+                    .addTask(task: myTask, userId: userId);
+                // Navigator.pushReplacement(
+                //   context,
+                //   MaterialPageRoute(builder: (_) => MainScreen()),
+                // );
                 // context.pushReplacement(RouteNames.main);
               },
               style: TextButton.styleFrom(
@@ -131,7 +155,7 @@ class _State extends ConsumerState<AddTaskScreen> {
                   borderRadius: BorderRadiusGeometry.circular(10),
                 ),
               ),
-              child: state.isLoading
+              child: state is AddTaskLoading
                   ? CircularProgressIndicator()
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,

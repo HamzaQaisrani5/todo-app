@@ -1,3 +1,8 @@
+import 'package:app_bottom_bar/src/providers/task_provider/delete_task_provider.dart';
+import 'package:app_bottom_bar/src/providers/task_provider/task_completion_provider.dart';
+import 'package:app_bottom_bar/src/providers/task_provider/update_task_provider.dart';
+import 'package:app_bottom_bar/src/states/tasks_state/update_task_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -60,7 +65,7 @@ class _State extends ConsumerState<TaskTile> {
                       padding: EdgeInsets.all(8),
                       child: Text(widget.task.priority),
                     ),
-                    SizedBox(width: 5),
+                    SizedBox(width: 2),
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.amber,
@@ -79,16 +84,18 @@ class _State extends ConsumerState<TaskTile> {
             child: Column(
               children: [
                 Checkbox(
+                  // checkColor: ,
+                  fillColor: WidgetStateProperty.all(Colors.green.shade400),
                   value: widget.task.isComplete,
                   onChanged: (value) {
                     if (value == null) {
                       return;
                     } else {
-                      final userId = ref.watch(authStateChangesProvider).value;
+                      final userId = FirebaseAuth.instance.currentUser!.uid;
                       ref
-                          .read(firestoreRepositoryProvider)
-                          .updateTaskCompletion(
-                            userId: userId!.uid,
+                          .read(taskCompletionProvider.notifier)
+                          .taskCompletion(
+                            userId: userId,
                             taskId: widget.task.id!,
                             isComplete: value,
                           );
@@ -105,13 +112,12 @@ class _State extends ConsumerState<TaskTile> {
                 SizedBox(height: 3),
                 IconButton(
                   onPressed: () async {
-                    final userId = ref.watch(authStateChangesProvider).value;
-
+                    final userId = FirebaseAuth.instance.currentUser!.uid;
                     await ref
-                        .read(firestoreControllerProvider.notifier)
-                        .deleteTask(
+                        .read(deleteTaskProvider.notifier)
+                        .deletetask(
                           task: widget.task,
-                          userId: userId!.uid,
+                          userId: userId,
                           taskId: widget.task.id!,
                         );
                   },
@@ -181,14 +187,17 @@ class _State extends ConsumerState<TaskTile> {
               onPressed: () async {
                 widget.task.title = title.text;
                 widget.task.description = description.text;
-                final userId = ref.watch(authStateChangesProvider).value;
+                final userId = FirebaseAuth.instance.currentUser!.uid;
+                // final userId = ref.watch(authStateChangesProvider).value;
+
                 await ref
-                    .read(firestoreControllerProvider.notifier)
+                    .read(updateTaskProvider.notifier)
                     .updateTask(
                       task: widget.task,
-                      userId: userId!.uid,
+                      userId: userId,
                       taskId: widget.task.id.toString(),
                     );
+
                 // ignore: use_build_context_synchronously
                 context.pop();
               },

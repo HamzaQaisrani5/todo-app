@@ -51,6 +51,7 @@ class _State extends ConsumerState<LoginScreen> {
             backgroundColor: Colors.green,
           ),
         );
+        context.go(StateRouteNames.bottomscreen);
       }
     });
 
